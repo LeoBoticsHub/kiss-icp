@@ -60,12 +60,24 @@ std::vector<Eigen::Vector3d> VoxelDownsample(const std::vector<Eigen::Vector3d> 
     return frame_dowsampled;
 }
 
+/**
+ * @brief Preprocess: Preprocess a frame of 3D points by filtering points based on range limits. 
+ *                    This function filters the input 3D points to include only those within the specified
+ *                    range limits (between min_range and max_range). Points outside this range are discarded.
+ * @param frame:     The input frame of 3D points.
+ * @param max_range: The maximum allowable distance for points to be included.
+ * @param min_range: The minimum allowable distance for points to be included.
+ * @return std::vector<Eigen::Vector3d> corrected_frame: The filtered frame of 3D points within the specified range.
+ */
 std::vector<Eigen::Vector3d> Preprocess(const std::vector<Eigen::Vector3d> &frame,
                                         double max_range,
                                         double min_range) {
     std::vector<Eigen::Vector3d> inliers;
+    // Copy points from frame to inliers if their norm (distance) is within the specified range
     std::copy_if(frame.cbegin(), frame.cend(), std::back_inserter(inliers), [&](const auto &pt) {
+        // Calculate the distance of the point from the origin (norm)
         const double norm = pt.norm();
+        // Include the point if it is within range
         return norm < max_range && norm > min_range;
     });
     return inliers;

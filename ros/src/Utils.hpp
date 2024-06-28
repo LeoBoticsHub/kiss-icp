@@ -43,6 +43,12 @@
 
 namespace tf2 {
 
+/**
+ * @brief sophusToTransform: Converts a Sophus SE3d object, which represents a 3D rigid body transformation,
+ *                           to a ROS 2 geometry_msgs::msg::Transform message.
+ * @param  T: The Sophus::SE3d object representing the transformation.
+ * @return t: A geometry_msgs::msg::Transform message representing the same transformation.
+ */
 inline geometry_msgs::msg::Transform sophusToTransform(const Sophus::SE3d &T) {
     geometry_msgs::msg::Transform t;
     t.translation.x = T.translation().x();
@@ -58,6 +64,12 @@ inline geometry_msgs::msg::Transform sophusToTransform(const Sophus::SE3d &T) {
     return t;
 }
 
+/**
+ * @brief sophusToPose: Converts a Sophus SE3d object, which represents a 3D rigid body transformation, 
+ *                      to a ROS 2 geometry_msgs::msg::Pose message message.
+ * @param  T: The Sophus::SE3d object representing the transformation.
+ * @return t: A geometry_msgs::msg::Pose message representing the same transformation.
+ */
 inline geometry_msgs::msg::Pose sophusToPose(const Sophus::SE3d &T) {
     geometry_msgs::msg::Pose t;
     t.position.x = T.translation().x();
@@ -73,6 +85,13 @@ inline geometry_msgs::msg::Pose sophusToPose(const Sophus::SE3d &T) {
     return t;
 }
 
+
+/**
+ * @brief transformToSophus: converts a ROS 2 geometry_msgs::msg::TransformStamped message into a Sophus::SE3d object, which represents a 
+ *                           rigid body transformation (rotation + translation) in 3D space using the Sophus library.
+ * @param transform:     the ROS 2 TransformStamped message to be converted.
+ * @return Sophus::SE3d: A Sophus::SE3d object representing the same transformation.
+*/
 inline Sophus::SE3d transformToSophus(const geometry_msgs::msg::TransformStamped &transform) {
     const auto &t = transform.transform;
     return Sophus::SE3d(
@@ -190,6 +209,11 @@ inline void FillPointCloud2Timestamp(const std::vector<double> &timestamps, Poin
     for (size_t i = 0; i < timestamps.size(); i++, ++msg_t) *msg_t = timestamps[i];
 }
 
+/**
+ * @brief  GetTimestamps: it retrieves the timestamps from the PointCloud2 message if a timestamp field exists.
+ * @param  msg: A constant shared pointer to the PointCloud2 message.
+ * @return timestamps: A vector containing the timestamps, or an empty vector if no timestamp field is found.
+ */
 inline std::vector<double> GetTimestamps(const PointCloud2::ConstSharedPtr msg) {
     auto timestamp_field = GetTimestampField(msg);
     if (!timestamp_field.has_value()) return {};
@@ -200,6 +224,11 @@ inline std::vector<double> GetTimestamps(const PointCloud2::ConstSharedPtr msg) 
     return timestamps;
 }
 
+/**
+ * @brief  PointCloud2ToEigen: Converts a ROS PointCloud2 message to a vector of Eigen 3D vectors.
+ * @param  msg: A constant shared pointer to the PointCloud2 message.
+ * @return points: A vector of 3D points as Eigen::Vector3d.
+ */
 inline std::vector<Eigen::Vector3d> PointCloud2ToEigen(const PointCloud2::ConstSharedPtr msg) {
     std::vector<Eigen::Vector3d> points;
     points.reserve(msg->height * msg->width);

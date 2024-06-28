@@ -33,17 +33,37 @@
 
 namespace kiss_icp::pipeline {
 
+/**
+ * @brief RegisterFrame: Register a frame of 3D points with optional deskewing based on timestamps.
+                         If deskewing is enabled and timestamps are provided, the frame is deskewed
+ *                       using the DeSkewScan method. The resulting frame (deskewed or original)
+ *                       is then passed to another RegisterFrame method for further processing.
+ * @param frame The input frame of 3D points.
+ * @param timestamps The timestamps associated with each 3D point in the frame.
+ * @return KissICP::Vector3dVectorTuple The result of the registration process.
+ */
 KissICP::Vector3dVectorTuple KissICP::RegisterFrame(const std::vector<Eigen::Vector3d> &frame,
                                                     const std::vector<double> &timestamps) {
+    // Lambda function to conditionally deskew the frame
     const auto &deskew_frame = [&]() -> std::vector<Eigen::Vector3d> {
+        // If deskewing is disabled or if timestamps are empty
         if (!config_.deskew || timestamps.empty()) return frame;
+        // Otherwise deskew the frame
         return DeSkewScan(frame, timestamps, last_delta_);
     }();
+    // Register the (potentially deskewed) frame using another RegisterFrame method
     return RegisterFrame(deskew_frame);
 }
 
+/**
+ * @brief RegisterFrame: Register a frame of 3D points by preprocessing, voxelizing, and running ICP 
+ *                      (Iterative Closest Point) registration to align the frame with a local map. 
+ *                       It updates the pose and model deviation accordingly.
+ * @param frame: The input frame of 3D points.
+ * @return KissICP::Vector3dVectorTuple {frame, source}: The deskewed input raw scan and the points used for registration.
+ */
 KissICP::Vector3dVectorTuple KissICP::RegisterFrame(const std::vector<Eigen::Vector3d> &frame) {
-    // Preprocess the input cloud
+    // Preprocess the input cloud to include only 3D points included within the specified range limits [min_range, max_range]
     const auto &cropped_frame = Preprocess(frame, config_.max_range, config_.min_range);
 
     // Voxelize

@@ -34,19 +34,19 @@ namespace kiss_icp::pipeline {
 
 struct KISSConfig {
     // map params
-    double voxel_size = 1.0;
-    double max_range = 100.0;
-    double min_range = 5.0;
+    double voxel_size        = 1.0;
+    double max_range         = 100.0;
+    double min_range         = 5.0;
     int max_points_per_voxel = 20;
 
     // th parms
-    double min_motion_th = 0.1;
+    double min_motion_th     = 0.1;
     double initial_threshold = 2.0;
 
     // registration params
-    int max_num_iterations = 500;
+    int max_num_iterations       = 500;
     double convergence_criterion = 0.0001;
-    int max_num_threads = 0;
+    int max_num_threads          = 0;
 
     // Motion compensation
     bool deskew = false;

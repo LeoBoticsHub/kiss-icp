@@ -34,13 +34,29 @@ constexpr double mid_pose_timestamp{0.5};
 }  // namespace
 
 namespace kiss_icp {
+
+/**
+ * @brief DeSkewScan: it deskews a frame of 3D points based on their timestamps and a given motion delta.
+ *                    This function corrects the points in the input frame to account for motion during the scan,
+ *                    using the timestamps and a specified delta pose. The correction is performed in parallel
+ *                    for efficiency. 
+ * @param  frame:      The input frame of 3D points.
+ * @param  timestamps: The timestamps associated with each 3D point.
+ * @param  delta:      The pose change during the scan.
+ * @return std::vector<Eigen::Vector3d> corrected_frame: The deskewed frame of 3D points.
+ */
 std::vector<Eigen::Vector3d> DeSkewScan(const std::vector<Eigen::Vector3d> &frame,
                                         const std::vector<double> &timestamps,
                                         const Sophus::SE3d &delta) {
-    const auto delta_pose = delta.log();
+    // Convert the delta pose to its logarithmic form
+    const auto delta_pose = delta.log(); 
+    // Prepare a vector for the corrected frame.
     std::vector<Eigen::Vector3d> corrected_frame(frame.size());
+    // Parallel loop to correct each point in the frame.
     tbb::parallel_for(size_t(0), frame.size(), [&](size_t i) {
+        // Calculate the motion of the sensor for the timestamp of the current point.
         const auto motion = Sophus::SE3d::exp((timestamps[i] - mid_pose_timestamp) * delta_pose);
+        // Apply the motion to the current point to get its corrected position.
         corrected_frame[i] = motion * frame[i];
     });
     return corrected_frame;
