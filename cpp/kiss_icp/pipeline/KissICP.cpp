@@ -95,39 +95,25 @@ KissICP::Vector3dVectorTuple KissICP::RegisterFrame(const std::vector<Eigen::Vec
     return {frame, source};
 }
 
+/**
+ * @brief Voxelize: voxelizes a given frame of 3D points by downsampling, based on a predefined voxel size
+ *                  (retrieved from the configuration settings).
+ * @param frame: A vector of 3D points (Eigen::Vector3d) representing the input frame to be voxelized.
+ * @return Vector3dVectorTuple{source, frame_downsample}: A tuple containing the downsampled 3D points
+ */
 KissICP::Vector3dVectorTuple KissICP::Voxelize(const std::vector<Eigen::Vector3d> &frame) const {
     
-    // define number of downsample to apply (0, 1 or 2)
-    int nDownsample = 0;
+    // Original code with double downsample
+    // const auto voxel_size = config_.voxel_size;
+    // const auto frame_downsample = kiss_icp::VoxelDownsample(frame, voxel_size * 0.5);
+    // const auto source = kiss_icp::VoxelDownsample(frame_downsample, voxel_size * 1.5);
+    // return {source, frame_downsample};
 
-    // init variables
+    // Single downsample, suggested in https://github.com/PRBonn/kiss-icp/issues/128
     const auto voxel_size = config_.voxel_size;
-    std::vector<Eigen::Vector3d> frame_downsample;
-    std::vector<Eigen::Vector3d> source;
+    const auto frame_downsample = kiss_icp::VoxelDownsample(frame, voxel_size * 0.5);
 
-    switch (nDownsample) {
-        // No downsample 
-        case 0:
-            frame_downsample = frame;
-            source           = frame;
-            break;
-        // Downsample one time
-        case 1:
-            frame_downsample = kiss_icp::VoxelDownsample(frame, voxel_size * 0.5);
-            source           = frame;
-            break;
-        // Downsample two times
-        case 2:
-            frame_downsample = kiss_icp::VoxelDownsample(frame, voxel_size * 0.5);
-            source           = kiss_icp::VoxelDownsample(frame_downsample, voxel_size * 1.5);
-            break;
-        default:
-            frame_downsample = kiss_icp::VoxelDownsample(frame, voxel_size * 0.5);
-            source           = kiss_icp::VoxelDownsample(frame_downsample, voxel_size * 1.5);
-            break;
-    }
-    
-    return {source, frame_downsample};
+    return {frame_downsample, frame_downsample};
 }
 
 }  // namespace kiss_icp::pipeline
