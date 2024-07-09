@@ -56,7 +56,7 @@ KissICP::Vector3dVectorTuple KissICP::RegisterFrame(const std::vector<Eigen::Vec
 }
 
 /**
- * @brief RegisterFrame: Register a frame of 3D points by preprocessing, voxelizing, and running ICP 
+ * @brief RegisterFrame: Registers a frame of 3D points by preprocessing, voxelizing, and running ICP 
  *                      (Iterative Closest Point) registration to align the frame with a local map. 
  *                       It updates the pose and model deviation accordingly.
  * @param frame: The input frame of 3D points.
@@ -66,7 +66,7 @@ KissICP::Vector3dVectorTuple KissICP::RegisterFrame(const std::vector<Eigen::Vec
     // Preprocess the input cloud to include only 3D points included within the specified range limits [min_range, max_range]
     const auto &cropped_frame = Preprocess(frame, config_.max_range, config_.min_range);
 
-    // Voxelize
+    // Voxelize the 3D point cloud
     const auto &[source, frame_downsample] = Voxelize(cropped_frame);
 
     // Get adaptive_threshold

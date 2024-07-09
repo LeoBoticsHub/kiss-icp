@@ -41,7 +41,7 @@ struct AdaptiveThreshold {
     double min_motion_threshold_;
     double max_range_;
 
-    // Local cache for ccomputation
+    // Local cache for computation
     double model_sse_;
     int num_samples_;
 };

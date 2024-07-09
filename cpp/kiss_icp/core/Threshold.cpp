@@ -26,6 +26,16 @@
 #include <cmath>
 
 namespace kiss_icp {
+
+/**
+ * @brief AdaptiveThreshold: defines the struct constructor with specified initial threshold,
+ *                           minimum motion threshold, and maximum range. The initial sum of 
+ *                           squared errors (SSE) is computed as the square of the initial threshold, 
+ *                           and the number of samples is set to 1.
+ * @param initial_threshold:    The initial value used to calculate the starting model sum of squared errors (SSE).
+ * @param min_motion_threshold: The minimum motion threshold used for adaptive thresholding.
+ * @param max_range:            The maximum range used for adaptive thresholding.
+ */
 AdaptiveThreshold::AdaptiveThreshold(double initial_threshold,
                                      double min_motion_threshold,
                                      double max_range)
@@ -34,7 +44,21 @@ AdaptiveThreshold::AdaptiveThreshold(double initial_threshold,
       model_sse_(initial_threshold * initial_threshold),
       num_samples_(1) {}
 
+
+
+/**
+ * @brief AdaptiveThreshold::UpdateModelDeviation     updates the current belief of the deviation from the prediction model.
+ *
+ * This method calculates the model error based on the provided current deviation,
+ * which is a transformation represented by `Sophus::SE3d`. The model error is a
+ * combination of the translational and rotational components of the deviation.
+ * If the model error exceeds the minimum motion threshold, the method updates
+ * the sum of squared errors (SSE) and increments the number of samples.
+ *
+ * @param current_deviation The current deviation from the prediction model, represented as a `Sophus::SE3d` transformation.
+ */
 void AdaptiveThreshold::UpdateModelDeviation(const Sophus::SE3d &current_deviation) {
+    // lambda function to compute model error
     const double model_error = [&]() {
         const double theta = Eigen::AngleAxisd(current_deviation.rotationMatrix()).angle();
         const double delta_rot = 2.0 * max_range_ * std::sin(theta / 2.0);

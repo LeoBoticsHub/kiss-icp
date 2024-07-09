@@ -59,11 +59,11 @@ public:
 
 public:
     explicit KissICP(const KISSConfig &config)
-        : config_(config),
-          registration_(
-              config.max_num_iterations, config.convergence_criterion, config.max_num_threads),
+        : config_(config), // Store the desired configuration parameters
+          registration_(config.max_num_iterations, config.convergence_criterion, config.max_num_threads), // Initialize registration for the ICP algorithm
           local_map_(config.voxel_size, config.max_range, config.max_points_per_voxel),
-          adaptive_threshold_(config.initial_threshold, config.min_motion_th, config.max_range) {}
+          adaptive_threshold_(config.initial_threshold, config.min_motion_th, config.max_range) // Initialize the adaptive threshold    
+    {}
 
 public:
     Vector3dVectorTuple RegisterFrame(const std::vector<Eigen::Vector3d> &frame);
@@ -87,7 +87,7 @@ private:
     Sophus::SE3d last_delta_;
 
     // KISS-ICP pipeline modules
-    KISSConfig config_;
+    KISSConfig config_;           // configuration parameters defined in the launch file
     Registration registration_;
     VoxelHashMap local_map_;
     AdaptiveThreshold adaptive_threshold_;

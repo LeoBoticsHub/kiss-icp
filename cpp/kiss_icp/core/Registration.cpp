@@ -168,13 +168,26 @@ LinearSystem BuildLinearSystem(const Correspondences &correspondences, const dou
 
 namespace kiss_icp {
 
+/**
+ * @brief Registration::Registration: constructor of the class finalised to perform the ICP algorithm with specified parameters:
+ *                                    - max_num_iteration: maximum number of iterations of the ICP algorithm
+ *                                    - convergence_criterion: convergence criterion
+ *                                    - max_num_threads: maximum number of threads
+ *                                    If the specified number of threads is greater than 0, it uses that value; otherwise, 
+ *                                    it defaults to the maximum concurrency (maximum number of threads) available from TBB.
+ *                                    It also sets a static global control setting for TBB (Intel Threading Building Blocks)
+ *                                    to manage the maximum allowed parallelism across the entire class.
+ * @param max_num_iteration:     The maximum number of iterations for the registration algorithm.
+ * @param convergence_criterion: The convergence criterion for the registration algorithm.
+ * @param max_num_threads:       The maximum number of threads to be used. If set to 0 or less, it defaults to the maximum concurrency.
+ */
 Registration::Registration(int max_num_iteration, double convergence_criterion, int max_num_threads)
     : max_num_iterations_(max_num_iteration),
       convergence_criterion_(convergence_criterion),
       // Only manipulate the number of threads if the user specifies something greater than 0
       max_num_threads_(max_num_threads > 0 ? max_num_threads : tbb::this_task_arena::max_concurrency()) {
     // This global variable requires static duration storage to be able to manipulate the max
-    // concurrency from TBB across the entire class
+    // concurrency from TBB (Intel Threading Building Blocks) across the entire class
     static const auto tbb_control_settings = tbb::global_control(
         tbb::global_control::max_allowed_parallelism, static_cast<size_t>(max_num_threads_));
 }

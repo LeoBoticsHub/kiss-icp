@@ -42,21 +42,42 @@ struct VoxelHash {
 }  // namespace
 
 namespace kiss_icp {
+/**
+ * @brief VoxelDownsample: Downsamples a point cloud using a voxel grid filter.
+ *                         This function performs voxel grid downsampling on an input point cloud.
+ *                         Each voxel represents a cube of side length `voxel_size`. Points falling
+ *                         within the same voxel are reduced to a single representative point, 
+ *                         effectively reducing the number of points in the output cloud.
+ * @param frame:      The input point cloud as a vector of Eigen::Vector3d points.
+ * @param voxel_size: The size of each voxel in the grid.
+ * @return vector<Eigen::Vector3d> frame_dowsampled: A vector of Eigen::Vector3d points representing the downsampled point cloud.
+ */
 std::vector<Eigen::Vector3d> VoxelDownsample(const std::vector<Eigen::Vector3d> &frame,
                                              double voxel_size) {
+    // Create a hash map to store unique voxels and their representative points
     tsl::robin_map<Voxel, Eigen::Vector3d, VoxelHash> grid;
-    grid.reserve(frame.size());
+    grid.reserve(frame.size());  // Reserve memory for efficiency
+    
+    // Iterate over each point in the input frame
     for (const auto &point : frame) {
+        // Calculate the voxel index for the current point
         const auto voxel = Voxel((point / voxel_size).cast<int>());
+        // If the voxel already exists in the grid, skip it
         if (grid.contains(voxel)) continue;
+        // Insert the voxel and its corresponding point into the grid
         grid.insert({voxel, point});
     }
+
+    // Create a vector to store the downsampled point cloud
     std::vector<Eigen::Vector3d> frame_dowsampled;
-    frame_dowsampled.reserve(grid.size());
+    frame_dowsampled.reserve(grid.size()); // Reserve memory for efficiency
+    // Iterate over the voxels in the grid
     for (const auto &[voxel, point] : grid) {
-        (void)voxel;
-        frame_dowsampled.emplace_back(point);
+        (void)voxel; // Avoid unused variable warning for the voxel key
+        frame_dowsampled.emplace_back(point); // Add the representative point to the downsampled frame
     }
+
+    // Return the downsampled point cloud
     return frame_dowsampled;
 }
 

@@ -30,7 +30,7 @@
 
 namespace {
 /// TODO(Nacho) Explain what is the very important meaning of this param
-constexpr double mid_pose_timestamp{0.5};
+constexpr double mid_pose_timestamp{0.5}; // typically set to 0.5 to center the timestamps around the middle of the sweep, making the deskewing more symmetric.
 }  // namespace
 
 namespace kiss_icp {
@@ -39,26 +39,27 @@ namespace kiss_icp {
  * @brief DeSkewScan: it deskews a frame of 3D points based on their timestamps and a given motion delta.
  *                    This function corrects the points in the input frame to account for motion during the scan,
  *                    using the timestamps and a specified delta pose. The correction is performed in parallel
- *                    for efficiency. 
- * @param  frame:      The input frame of 3D points.
- * @param  timestamps: The timestamps associated with each 3D point.
- * @param  delta:      The pose change during the scan.
+ *                    for efficiency. Refer to section "A. Step1: Motion Prediction and Scan Deskewing"
+ * @param  frame:      The input frame of 3D points (p_i)
+ * @param  timestamps: The timestamps associated with each 3D point (s_i)
+ * @param  delta:      The pose change during the scan
  * @return std::vector<Eigen::Vector3d> corrected_frame: The deskewed frame of 3D points.
  */
 std::vector<Eigen::Vector3d> DeSkewScan(const std::vector<Eigen::Vector3d> &frame,
                                         const std::vector<double> &timestamps,
                                         const Sophus::SE3d &delta) {
-    // Convert the delta pose to its logarithmic form
+    // Convert the delta pose to its logarithmic form (from SE(3) to se(3))
     const auto delta_pose = delta.log(); 
-    // Prepare a vector for the corrected frame.
+    // Prepare a vector for the corrected frame (P*)
     std::vector<Eigen::Vector3d> corrected_frame(frame.size());
-    // Parallel loop to correct each point in the frame.
+    // Parallel loop to correct each point in the frame: eq(4)
     tbb::parallel_for(size_t(0), frame.size(), [&](size_t i) {
-        // Calculate the motion of the sensor for the timestamp of the current point.
+        // Calculate the motion (transformation) of the sensor for the timestamp of the current point.
         const auto motion = Sophus::SE3d::exp((timestamps[i] - mid_pose_timestamp) * delta_pose);
-        // Apply the motion to the current point to get its corrected position.
+        // Apply the motion (transformation) to the current point to get its corrected position.
         corrected_frame[i] = motion * frame[i];
     });
+    // return the overall corrected frame
     return corrected_frame;
 }
 }  // namespace kiss_icp
